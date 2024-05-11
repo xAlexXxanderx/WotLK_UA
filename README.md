@@ -1,11 +1,14 @@
 # ClassicUA
 
-**World of Warcraft: Classic Ukrainization Addon**
+**Ukrainization Addon for World of Warcraft: Wrath of the Lich King (Version: 3.3.5a)**
 
-[![Crowdin](https://badges.crowdin.net/classicua/localized.svg)](https://crowdin.com/project/classicua)
+Original code get from [ClassicUA](https://github.com/greenya/ClassicUA) Addon and backported for 3.3.5a
 
-## Причетні
+Quest list and function for get quest id get from [WoWpoPolsku-Quests 3.07](https://panel.wowpopolsku.pl/files/WoWpoPolsku_Quests_30300_2023-07-27.zip) addon
 
+## Причетні (ClassicUA)
+
+* greenya — автор ClassicUA
 * Annakonda — переклад нпц і предметів, переклад завдань Ельвиннського лісу та Степів, переклад книжок
 * Annielis — переклад завдань Ясенедолу
 * Bellany — переклад завдань шаманів та воїнів
@@ -37,7 +40,10 @@
 * Zrada — переклад заклять і предметів, переклад завдань Західного краю, болота Скорбот, Дун-Морога
 * Zyxer — виправлення помилок в коді аддона
 
-## Посилання
+## Причетні (WoWpoPolsku-Quest)
+* Platine — автор WoWpoPolsku-Quest
+
+## Посилання (ClassicUA)
 
 * [Словник термінів](https://greenya.github.io/ClassicUA/terms/)
 * [Проект на CurseForge](https://www.curseforge.com/wow/addons/classicua)
