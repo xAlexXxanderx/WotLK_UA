@@ -4,9 +4,9 @@ local _, addonTable = ...
 -- [ assets ]
 -- ----------
 
-local asset_ua_code = "|TInterface\\AddOns\\ClassicUA\\assets\\ua:0|t"
-local asset_font1_path = "Interface\\AddOns\\ClassicUA\\assets\\Morpheus_UA.ttf"
-local asset_font2_path = "Interface\\AddOns\\ClassicUA\\assets\\FRIZQT_UA.ttf"
+local asset_ua_code = "|TInterface\\AddOns\\WotLK_UA\\assets\\ua:0|t"
+local asset_font1_path = "Interface\\AddOns\\WotLK_UA\\assets\\Morpheus_UA.ttf"
+local asset_font2_path = "Interface\\AddOns\\WotLK_UA\\assets\\FRIZQT_UA.ttf"
 
 -- ---------
 -- [ utils ]
@@ -202,19 +202,19 @@ local default_character_options = {
 }
 
 local prepare_options = function ()
-    ClassicUA_Options = ClassicUA_Options or copy_table({}, default_options)
-    options = ClassicUA_Options
+    WotLK_UA_Options = WotLK_UA_Options or copy_table({}, default_options)
+    options = WotLK_UA_Options
 
-    ClassicUA_Character_Options = ClassicUA_Character_Options or copy_table({}, default_character_options)
-    character_options = ClassicUA_Character_Options
+    WotLK_UA_Character_Options = WotLK_UA_Character_Options or copy_table({}, default_character_options)
+    character_options = WotLK_UA_Character_Options
 end
 
 local reset_options = function ()
-    ClassicUA_Options = copy_table({}, default_options)
-    options = ClassicUA_Options
+    WotLK_UA_Options = copy_table({}, default_options)
+    options = WotLK_UA_Options
 
-    ClassicUA_Character_Options = copy_table({}, default_character_options)
-    character_options = ClassicUA_Character_Options
+    WotLK_UA_Character_Options = copy_table({}, default_character_options)
+    character_options = WotLK_UA_Character_Options
 end
 
 -- -----------
@@ -591,7 +591,7 @@ for _, tt in pairs({
 }) do
     if tt then
         known_tooltips[#known_tooltips + 1] = tt
-        tt.classicua = { entry_type = false, entry_id = false }
+        tt.wotlk_ua = { entry_type = false, entry_id = false }
     end
 end
 
@@ -719,7 +719,7 @@ local add_general_entry_to_tooltip = function (tooltip, entry)
 end
 
 local add_entry_to_tooltip = function (tooltip, entry_type, entry_id, is_aura)
-    if tooltip.classicua.entry_type then
+    if tooltip.wotlk_ua.entry_type then
         return
     end
 
@@ -749,12 +749,12 @@ local add_entry_to_tooltip = function (tooltip, entry_type, entry_id, is_aura)
         tooltip:Show()
     end
 
-    tooltip.classicua.entry_type = entry_type
-    tooltip.classicua.entry_id = entry_id
+    tooltip.wotlk_ua.entry_type = entry_type
+    tooltip.wotlk_ua.entry_id = entry_id
 end
 
 local add_glossary_entry_to_tooltip = function (tooltip, glossary_key)
-    if tooltip.classicua.entry_type then
+    if tooltip.wotlk_ua.entry_type then
         return
     end
 
@@ -773,12 +773,12 @@ local add_glossary_entry_to_tooltip = function (tooltip, glossary_key)
         end
     end
 
-    tooltip.classicua.entry_type = "glossary"
-    tooltip.classicua.entry_id = glossary_key
+    tooltip.wotlk_ua.entry_type = "glossary"
+    tooltip.wotlk_ua.entry_id = glossary_key
 end
 
 local add_talent_entry_to_tooltip = function (tooltip, tab_index, tier, column, rank, max_rank)
-    if tooltip.classicua.entry_type then
+    if tooltip.wotlk_ua.entry_type then
         return
     end
 
@@ -834,8 +834,8 @@ local add_talent_entry_to_tooltip = function (tooltip, tab_index, tier, column, 
         tooltip:Show()
     end
 
-    tooltip.classicua.entry_type = "spell"
-    tooltip.classicua.entry_id = talent[rank_to_show]
+    tooltip.wotlk_ua.entry_type = "spell"
+    tooltip.wotlk_ua.entry_id = talent[rank_to_show]
 end
 
 local tooltip_set_item = function (self)
@@ -867,7 +867,7 @@ local tooltip_set_unit = function (self)
 end
 
 local tooltip_updated = function (self)
-    if self.classicua.entry_type then
+    if self.wotlk_ua.entry_type then
         return
     end
 
@@ -888,7 +888,7 @@ local tooltip_updated = function (self)
     end
 
     local text = _G[self:GetName() .. "TextLeft1"]:GetText()
-    if text == self.classicua.entry_id then
+    if text == self.wotlk_ua.entry_id then
         return
     end
 
@@ -896,8 +896,8 @@ local tooltip_updated = function (self)
 end
 
 local tooltip_cleared = function (self)
-    self.classicua.entry_type = false
-    self.classicua.entry_id = false
+    self.wotlk_ua.entry_type = false
+    self.wotlk_ua.entry_id = false
 end
 
 for _, tt in pairs(known_tooltips) do
@@ -961,6 +961,7 @@ local setup_frame_background_and_border = function (frame)
     texture:SetPoint("BOTTOMRIGHT", -4, 8)
 
     frame:SetBackdrop({
+        bgFile="Interface\\Tooltips\\UI-Tooltip-Background",
         edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
         edgeSize = 24
     })
@@ -1022,6 +1023,62 @@ local setup_frame_scrollbar_values = function (frame, height)
     frame.content:SetSize(frame.content:GetWidth(), height)
 end
 
+-- -------------------------------------------
+-- [ code from WoWpoPolsku-Quests 3.07 addon ]
+-- -------------------------------------------
+
+if (not QTR_PC) then
+    QTR_PC = {};
+end
+
+function QTR_split(str, c)
+    local aCount = 0;
+    local array = {};
+    local a = string.find(str, c);
+    while a do
+       aCount = aCount + 1;
+       array[aCount] = string.sub(str, 1, a-1);
+       str=string.sub(str, a+1);
+       a = string.find(str, c);
+    end
+    aCount = aCount + 1;
+    array[aCount] = str;
+    return array;
+end
+
+local quest_id = nil
+local get_quest_id = function (q_title)
+    if (QuestList[q_title]) then
+        local q_lists=QuestList[q_title];
+        q_i=string.find(q_lists, ",");
+        if ( string.find(q_lists, ",")==nil ) then
+           -- only 1 questID to this title
+           quest_id=tonumber(q_lists);
+        else
+           -- multiple questIDs - get first, available (not completed) questID from QuestLists
+           local QTR_table=QTR_split(q_lists, ",");
+           local QTR_multiple = "";
+           local QTR_Center="";
+           for ii,vv in ipairs(QTR_table) do
+              if (not QTR_PC[vv]) then
+                 if (QTR_Center=="") then
+                     QTR_Center=vv;
+                 else
+                     QTR_multiple = QTR_multiple .. ", " .. vv;
+                 end
+              end
+           end
+           if ( string.len(QTR_Center)>0 ) then
+            quest_id=tonumber(QTR_Center);
+              if ( string.len(QTR_multiple)>0 ) then
+                 QTR_multiple = " (" .. string.sub(QTR_multiple, 3) .. ")";
+              end
+           end
+        end
+     end
+    return(quest_id)
+end
+
 -- ----------------
 -- [ quest frames ]
 -- ----------------
@@ -1033,7 +1090,7 @@ local get_quest_frame = function (name)
     end
 
     local width, height = QuestFrame:GetSize()
-    local frame = CreateFrame("Frame", nil, QuestFrame, "BackdropTemplate")
+    local frame = CreateFrame("Frame", nil, QuestFrame)
     frame:SetFrameStrata("HIGH")
     frame:SetSize(width - 64, height - 160)
     frame:SetPoint("TOP", 0, -72)
@@ -1092,7 +1149,7 @@ end
 
 QuestFrameDetailPanel:HookScript("OnShow", function (self)
     local frame = get_quest_frame("detail")
-    local entry = get_entry("quest", GetQuestID())
+    local entry = get_entry("quest", get_quest_id(GetTitleText()))
     if entry then
         set_quest_content(frame, entry[1], entry[2], "Доручення", entry[3])
         frame:Show()
@@ -1108,7 +1165,7 @@ end)
 
 QuestFrameProgressPanel:HookScript("OnShow", function (self)
     local frame = get_quest_frame("progress")
-    local entry = get_entry("quest", GetQuestID())
+    local entry = get_entry("quest", get_quest_id(GetTitleText()))
     if entry then
         set_quest_content(frame, entry[1], entry[4])
         frame:Show()
@@ -1124,7 +1181,7 @@ end)
 
 QuestFrameRewardPanel:HookScript("OnShow", function (self)
     local frame = get_quest_frame("reward")
-    local entry = get_entry("quest", GetQuestID())
+    local entry = get_entry("quest", get_quest_id(GetTitleText()))
     if entry then
         set_quest_content(frame, entry[1], entry[5])
         frame:Show()
@@ -1145,7 +1202,7 @@ local get_questlog_frame = function ()
     end
 
     local width, height = QuestLogDetailScrollFrame:GetSize()
-    local frame = CreateFrame("Frame", nil, QuestLogDetailScrollFrame, "BackdropTemplate")
+    local frame = CreateFrame("Frame", nil, QuestLogDetailScrollFrame)
     frame:SetFrameStrata("HIGH")
     frame:SetSize(width + 18, height + 18)
     frame:SetPoint("TOP", 0, 18/2)
@@ -1174,7 +1231,7 @@ hooksecurefunc("SelectQuestLogEntry", function ()
     local frame = get_questlog_frame()
     local selection = GetQuestLogSelection()
     if selection > 0 then
-        local id = select(8, GetQuestLogTitle(selection))
+        local id = get_quest_id(select(1, GetQuestLogTitle(selection)))
         local entry = get_entry("quest", id)
         if entry then
             set_quest_content(frame, entry[1], entry[3], "Опис", entry[2])
@@ -1197,8 +1254,8 @@ local get_gossip_frame = function ()
         return gossip_frame
     end
 
-    local width, height = GossipFrame.GreetingPanel.ScrollBox:GetSize()
-    local frame = CreateFrame("Frame", nil, GossipFrame.GreetingPanel.ScrollBar, "BackdropTemplate")
+    local width, height = GossipGreetingScrollFrame:GetSize()
+    local frame = CreateFrame("Frame", nil, GossipGreetingScrollFrame)
     frame:SetFrameStrata("HIGH")
 
     if is_wrath then
@@ -1238,7 +1295,7 @@ local show_gossip = function ()
     local npc_guid = UnitGUID("target")
     if npc_guid then
         local _, _, _, _, _, npc_id, _ = strsplit("-", npc_guid)
-        local gossip_text_en = C_GossipInfo:GetText()
+        local gossip_text_en = GetGossipText()
         local gossip_text_ua = get_gossip_text(npc_id, gossip_text_en)
         if gossip_text_ua then
             set_gossip_content(gossip_text_ua)
@@ -1264,7 +1321,7 @@ local get_book_frame = function ()
     end
 
     local width, height = ItemTextScrollFrame:GetSize()
-    local frame = CreateFrame("Frame", nil, ItemTextScrollFrame, "BackdropTemplate")
+    local frame = CreateFrame("Frame", nil, ItemTextScrollFrame)
     frame:SetFrameStrata("HIGH")
     frame:SetSize(width + 18, height + 18)
     frame:SetPoint("TOP", 0, 18/2)
@@ -1414,16 +1471,16 @@ local world_map_area_label_update = function (self)
     end
 end
 
-local prepare_world_map = function ()
-    for provider, _ in pairs(WorldMapFrame.dataProviders) do
-        if provider.setAreaLabelCallback and provider.Label and provider.Label.Name then
-            local _, size, style = provider.Label.Name:GetFont()
-            provider.Label.Name:SetFont(asset_font2_path, size, style)
-            provider.Label:HookScript("OnUpdate", world_map_area_label_update)
-            break
-        end
-    end
-end
+-- local prepare_world_map = function ()
+--     for provider, _ in pairs(WorldMapFrame.dataProviders) do
+--         if provider.setAreaLabelCallback and provider.Label and provider.Label.Name then
+--             local _, size, style = provider.Label.Name:GetFont()
+--             provider.Label.Name:SetFont(asset_font2_path, size, style)
+--             provider.Label:HookScript("OnUpdate", world_map_area_label_update)
+--             break
+--         end
+--     end
+-- end
 
 -- ----------------
 -- [ target frame ]
@@ -1446,20 +1503,20 @@ end
 -- [ name plates ]
 -- ---------------
 
-hooksecurefunc("CompactUnitFrame_UpdateName", function (self)
-    if ShouldShowName(self) and not self:IsForbidden() then
-        local guid = UnitGUID(self.unit)
-        if guid then
-            local kind, _, _, _, _, id, _ = strsplit("-", guid)
-            if kind == "Creature" and id then
-                local entry = get_entry("npc", id)
-                if entry then
-                    self.name:SetText(capitalize(entry[1]))
-                end
-            end
-        end
-    end
-end)
+-- hooksecurefunc("CompactUnitFrame_UpdateName", function (self)
+--     if ShouldShowName(self) and not self:IsForbidden() then
+--         local guid = UnitGUID(self.unit)
+--         if guid then
+--             local kind, _, _, _, _, id, _ = strsplit("-", guid)
+--             if kind == "Creature" and id then
+--                 local entry = get_entry("npc", id)
+--                 if entry then
+--                     self.name:SetText(capitalize(entry[1]))
+--                 end
+--             end
+--         end
+--     end
+-- end)
 
 -- -----------------
 -- [ options frame ]
@@ -1543,7 +1600,7 @@ local prepare_options_frame = function ()
     f = options_frame:CreateFontString()
     f:SetPoint("TOPLEFT", 22, -20)
     f:SetFont(asset_font2_path, 20)
-    f:SetText("|cff1177eeClassic|r|cffffdd00UA|r")
+    f:SetText("|cff1177eeWotLK_|r|cffffdd00UA|r")
 
     -- version & stats
 
@@ -1553,7 +1610,7 @@ local prepare_options_frame = function ()
     f:SetJustifyH("LEFT")
     local stats = get_stats()
     f:SetText(
-        "Версія: " .. GetAddOnMetadata("ClassicUA", "Version") .. "\n"
+        "Версія: " .. GetAddOnMetadata("WotLK_UA", "Version") .. "\n"
         .. "— завдань: " .. stats.quest_alliance + stats.quest_horde + stats.quest_both .. "\n"
         .. "— книжок: " .. stats.book .. "\n"
         .. "— локацій: " .. stats.zone .. "\n"
@@ -1577,7 +1634,7 @@ local prepare_options_frame = function ()
         UpdateAddOnMemoryUsage()
         for i = 1, GetNumAddOns() do
             local name = GetAddOnInfo(i)
-            if name == "ClassicUA" then
+            if name == "WotLK_UA" then
                 local megabytes = GetAddOnMemoryUsage(i) / 1024
                 memory_usage_text = string.format("\n\nВикористання пам'яті: %.1f Мб", megabytes)
             end
@@ -1601,13 +1658,13 @@ local prepare_options_frame = function ()
     f:SetWidth(200)
     f:SetHeight(20)
     f.tooltipText = "Розмір шрифту в вікні завдання."
-    f:SetObeyStepOnDrag(true)
-    f:SetValueStep(1)
+    -- f:SetObeyStepOnDrag(true)
+    -- f:SetValueStep(1)
     f:SetMinMaxValues(10, 20)
-    f.Low:SetText("10")
-    f.High:SetText("20")
+    -- f.Low:SetText("10")
+    -- f.High:SetText("20")
     f:SetScript("OnValueChanged", function (self, value)
-        self.Text:SetText("Розмір тексту завдання: " .. value)
+        -- self.Text:SetText("Розмір тексту завдання: " .. value)
         options.quest_text_size = value
     end)
 
@@ -1619,13 +1676,13 @@ local prepare_options_frame = function ()
     f:SetWidth(200)
     f:SetHeight(20)
     f.tooltipText = "Розмір шрифту в вікні книжки."
-    f:SetObeyStepOnDrag(true)
+    -- f:SetObeyStepOnDrag(true)
     f:SetValueStep(1)
     f:SetMinMaxValues(10, 20)
-    f.Low:SetText("10")
-    f.High:SetText("20")
+    -- f.Low:SetText("10")
+    -- f.High:SetText("20")
     f:SetScript("OnValueChanged", function (self, value)
-        self.Text:SetText("Розмір тексту книжки: " .. value)
+        -- self.Text:SetText("Розмір тексту книжки: " .. value)
         options.book_text_size = value
     end)
 
@@ -1634,7 +1691,7 @@ local prepare_options_frame = function ()
     f = CreateFrame("CheckButton", nil, options_frame, "InterfaceOptionsCheckButtonTemplate")
     options_frame.debug_frame = f
     f:SetPoint("TOPLEFT", 280, -78)
-    f.Text:SetText("Режим розробки")
+    -- f.Text:SetText("Режим розробки")
     f.tooltipText = "В цьому режимі в підказках відображається ID, якщо переклад відсутній. Також відображаються помилки в базі перекладів, якщо ви їх бачите, будь-ласка повідомте про це."
     f:SetScript("OnClick", function (self)
         options.debug = self:GetChecked()
@@ -1642,7 +1699,7 @@ local prepare_options_frame = function ()
 
     -- info tabs
 
-    f = CreateFrame("Frame", nil, options_frame, "BackdropTemplate")
+    f = CreateFrame("Frame", nil, options_frame)
     options_frame.info_tab_frame = f
     f:SetPoint("TOPLEFT", 24, -224)
     f:SetSize(600, 340)
@@ -1723,7 +1780,7 @@ local prepare_options_frame = function ()
 
     -- add options frame to Interface Options -> AddOns
 
-    options_frame.name = "ClassicUA"
+    options_frame.name = "WotLK_UA"
     options_frame.default = reset_options
     options_frame.refresh = function ()
         local f = options_frame
@@ -1738,8 +1795,8 @@ local prepare_options_frame = function ()
 
     -- add slash command to open the options
 
-    _G.SLASH_CLASSICUA_SETTINGS1 = "/ua"
-    SlashCmdList.CLASSICUA_SETTINGS = function ()
+    _G.SLASH_WOTLK_UA_SETTINGS1 = "/ua"
+    SlashCmdList.WOTLK_UA_SETTINGS = function ()
         InterfaceOptionsFrame_OpenToCategory(options_frame)
     end
 end
@@ -1769,8 +1826,8 @@ event_frame:SetScript("OnEvent", function (self, event, ...)
         prepare_options_frame()
         print(
             asset_ua_code
-            .. " ClassicUA v" .. GetAddOnMetadata("ClassicUA", "Version")
-            .. " — |cffffbb22" .. _G.SLASH_CLASSICUA_SETTINGS1 .. "|r"
+            .. " WotLK_UA v" .. GetAddOnMetadata("WotLK_UA", "Version")
+            .. " — |cffffbb22" .. _G.SLASH_WOTLK_UA_SETTINGS1 .. "|r"
         )
 
     elseif event == "PLAYER_LOGIN" then
@@ -1785,7 +1842,7 @@ event_frame:SetScript("OnEvent", function (self, event, ...)
         prepare_glossary()
         prepare_codes(name, race, class, sex == 2) -- 2 for male
         prepare_zone_text()
-        prepare_world_map()
+        -- prepare_world_map()
 
     elseif event == "PLAYER_TARGET_CHANGED" then
         update_target_frame_text()
@@ -1797,8 +1854,8 @@ event_frame:SetScript("OnEvent", function (self, event, ...)
         hide_gossip()
 
     elseif event == "ITEM_TEXT_BEGIN" then
-        if known_tooltips[1].classicua.entry_type == "item" then
-            book_item_id = known_tooltips[1].classicua.entry_id
+        if known_tooltips[1].wotlk_ua.entry_type == "item" then
+            book_item_id = known_tooltips[1].wotlk_ua.entry_id
         end
 
     elseif event == "ITEM_TEXT_READY" then
