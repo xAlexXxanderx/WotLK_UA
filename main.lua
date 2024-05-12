@@ -1294,7 +1294,7 @@ end
 local show_gossip = function ()
     local npc_guid = UnitGUID("target")
     if npc_guid then
-        local _, _, _, _, _, npc_id, _ = strsplit("-", npc_guid)
+        npc_id = tonumber(npc_guid:sub(-12, -7), 16)
         local gossip_text_en = GetGossipText()
         local gossip_text_ua = get_gossip_text(npc_id, gossip_text_en)
         if gossip_text_ua then
