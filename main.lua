@@ -1075,7 +1075,9 @@ local get_quest_id = function (q_title)
               end
            end
         end
-     end
+    else
+        quest_id = nil
+    end
     return(quest_id)
 end
 
