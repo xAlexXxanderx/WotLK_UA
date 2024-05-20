@@ -4,7 +4,7 @@
 
 Original code get from [ClassicUA](https://github.com/greenya/ClassicUA) Addon and backported for 3.3.5a
 
-Quest list and function for get quest id get from [WoWpoPolsku-Quests 3.07](https://panel.wowpopolsku.pl/files/WoWpoPolsku_Quests_30300_2023-07-27.zip) addon
+Function for get quest id get from [WoWpoPolsku-Quests 3.07](https://panel.wowpopolsku.pl/files/WoWpoPolsku_Quests_30300_2023-07-27.zip) addon
 
 ## Причетні (ClassicUA)
 
