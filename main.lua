@@ -1479,7 +1479,7 @@ local function setup_frame_background_and_border(frame)
     texture:SetPoint("BOTTOMRIGHT", -4, 8)
 
     frame:SetBackdrop({
-        bgFile="Interface\\Tooltips\\UI-Tooltip-Background",
+        bgFile="Interface\\AchievementFrame\\UI-Achievement-Parchment-Horizontal",
         edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
         edgeSize = 24
     })
