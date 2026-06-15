@@ -2,8 +2,8 @@
 
 ## Title: |cff1177eeWotLK_|r|cffffdd00UA|r
 ## Notes: Game localization to Ukrainian language.
-## Author: Ported to 3.3.5a: xAlexXxanderx, Original developer: greenya
-## Version: 5.6
+## Author: Ported to 3.3.5a: xAlexXxanderx, Original authors: Greenya, Jakanis, and others
+## Version: 5.6.1
 ## SavedVariables: WotLK_UA_Options
 ## SavedVariablesPerCharacter: WotLK_UA_Character_Options
 
@@ -17,6 +17,5 @@ entries\tbc\index.xml
 entries\wrath\index.xml
 
 QuestList.lua
-QuestsFrames.xml
 
 main.lua
