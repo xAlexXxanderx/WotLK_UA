@@ -1125,6 +1125,31 @@ local function add_line_to_tooltip(tooltip, content, template, r, g, b, content_
     end
 end
 
+local function process_hearthstone_bind_location_code(entry)
+    if not entry or not entry.use then
+        return
+    end
+
+    local code = "{домівка}"
+    local lines = type(entry.use) == "table" and entry.use or { entry.use }
+    local home
+
+    for i = 1, #lines do
+        if type(lines[i]) == "string" and lines[i]:find(code) then
+            if not home then
+                local loc = GetBindLocation()
+                home = get_glossary_text(loc, loc, "zone")
+            end
+            lines[i] = lines[i]:gsub(code, home)
+        end
+    end
+
+    -- we need only copy string value, in case of table its a ref and changes where made in place
+    if type(entry.use) == "string" then
+        entry.use = lines[1]
+    end
+end
+
 local function add_item_entry_to_tooltip(tooltip, entry, entry_id, sub_item_depth)
     sub_item_depth = sub_item_depth or 1
     if sub_item_depth > 4 then
@@ -1135,6 +1160,8 @@ local function add_item_entry_to_tooltip(tooltip, entry, entry_id, sub_item_dept
         end
         return
     end
+
+    process_hearthstone_bind_location_code(entry)
 
     local prefix = sub_item_depth == 1 and asset_ua_code .. " " or ""
     local heading = make_entry_text(entry[1], tooltip)
