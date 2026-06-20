@@ -1356,12 +1356,12 @@ local function add_talent_entry_to_tooltip(tooltip, tab_index, tier, column, ran
         end
     end
 
-    tooltip:AddLine(" ")
-    tooltip:AddLine(asset_ua_code .. " " .. entry[1], 1, 1, 1)
+    -- tooltip:AddLine(" ")
+    -- tooltip:AddLine(asset_ua_code .. " " .. entry[1], 1, 1, 1)
 
-    if entry[2] then
-        tooltip:AddLine(make_entry_text(entry[2], tooltip), 1, 0.82, 0, true)
-    end
+    -- if entry[2] then
+    --     tooltip:AddLine(make_entry_text(entry[2], tooltip), 1, 0.82, 0, true)
+    -- end
 
     if rank_to_show ~= next_rank_to_show then
         local next_rank_desc = "spell#" .. talent[next_rank_to_show]
