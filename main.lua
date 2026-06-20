@@ -1323,9 +1323,9 @@ local function add_glossary_entry_to_tooltip(tooltip, glossary_key)
 end
 
 local function add_talent_entry_to_tooltip(tooltip, tab_index, tier, column, rank, max_rank)
-    if tooltip.wotlk_ua.entry_type then
-        return
-    end
+    -- if tooltip.wotlk_ua.entry_type then
+    --     return
+    -- end
 
     local talent =
         addonTable.talent_tree and
