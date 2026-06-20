@@ -1395,7 +1395,7 @@ local function tooltip_set_item(self)
 end
 
 local function tooltip_set_spell(self)
-    local _, id = self:GetSpell()
+    local _, _, id = self:GetSpell()
     if id then
         add_entry_to_tooltip(self, "spell", id)
     end
