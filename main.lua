@@ -912,38 +912,75 @@ local function get_entry(entry_type, entry_id)
     return resolve_entry_with_possible_ref(entry_type, entry_id)
 end
 
+local function fix_float_number (value)
+    local result = value:gsub(",", "")
+    -- fix floating-point number without leading "0", e.g. ",2"
+    if #result > 1 and result:sub(1, 1) == "," then
+        result = "0" .. result
+    end
+    return result
+end
+
+local function resolve_optional_entry_text(text, tt_lines, tooltip_matches_to_skip)
+    return text:gsub("%[(.-)#(.-)%]", function(translation, condition)
+        local values = {}
+        local conditions = { strsplit("#", condition) }
+        for i = 1, #conditions do
+            local pattern = esc(conditions[i]):gsub("{(%d+)}", function () return "([%d,\.]*%d)" end)
+            local match_number = 0
+            for j = 1, #tt_lines do
+                local matches = { tt_lines[j]:match(pattern) }
+                if #matches > 0 then
+                    match_number = match_number + 1
+                    if match_number > tooltip_matches_to_skip then
+                        if #matches > 0 and not (matches[1] == pattern) then
+                            for k = 1, #matches do
+                                values[#values + 1] = fix_float_number(matches[k])
+                            end
+                        end
+                        break
+                    end
+                end
+            end
+            if match_number <= tooltip_matches_to_skip then
+                return ""
+            end
+        end
+        return translation:gsub("{(%d+)}", function (a) return values[tonumber(a)] end)
+    end)
+end
+
 local function make_entry_text(text, tooltip, tooltip_matches_to_skip)
     if not text then
         return
     end
-
-    text = { strsplit("#", text) }
-    if #text == 1 or not tooltip then
-        return text[1]
+    if not text:find("#") or not tooltip then
+        return text
     end
-
-    local tt_lines = tooltip_lines(tooltip)
 
     if not tooltip_matches_to_skip then
         tooltip_matches_to_skip = 0
     end
+    local tt_lines = tooltip_lines(tooltip)
+
+    text = resolve_optional_entry_text(text, tt_lines, tooltip_matches_to_skip)
+    text = { strsplit("#", text) }
 
     local values = {}
     for i = 2, #text do
-        local p = esc(text[i]:lower()):gsub("{(%d+)}", function (a) return "(%d*.?%d+)" end)
+        local pattern = esc(text[i]:lower()):gsub("{(%d+)}", function () return "([%d,\.]*%d)" end)
+        local pattern_numbers = {}
+        for pattern_number in text[i]:lower():gmatch("{(%d+)}") do
+            pattern_numbers[#pattern_numbers + 1] = tonumber(pattern_number)
+        end
         local match_number = 0
         for j = 1, #tt_lines do
-            local v = { tt_lines[j]:lower():match(p) }
-            if #v > 0 then
+            local matches = { tt_lines[j]:lower():match(pattern) }
+            if #matches > 0 and #matches == #pattern_numbers then
                 match_number = match_number + 1
                 if match_number > tooltip_matches_to_skip then
-                    for k = 1, #v do
-                        local value = v[k]:gsub("%.", ",")
-                        -- fix floating-point number without leading "0", e.g. ",2"
-                        if #value > 1 and value:sub(1, 1) == "," then
-                            value = "0" .. value
-                        end
-                        values[#values + 1] = value
+                    for k = 1, #matches do
+                        values[pattern_numbers[k]] = fix_float_number(matches[k])
                     end
                     break
                 end
@@ -956,6 +993,8 @@ local function make_entry_text(text, tooltip, tooltip_matches_to_skip)
     if result:match("{%d}") and options.dev_mode and #tt_lines > 0 then
         dev_log_issue("незаповнені значення шаблону [" .. tt_lines[1] .. "] " .. text[1])
     end
+
+    result = strtrim(result)
 
     return result
 end
