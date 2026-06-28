@@ -7,9 +7,11 @@ local _, addonTable = ...
 local hooksecurefunc    = _G['hooksecurefunc']
 local sort              = _G['sort']
 local strbyte           = _G['strbyte']
+local strgmatch         = _G.string.gmatch
 local strsplit          = _G['strsplit']
 local strtrim           = _G['strtrim']
-local mathfmod         = _G.math.fmod
+local tblconcat         = _G.table.concat
+local mathfmod          = _G.math.fmod
 
 local C_ChatBubbles             = _G['C_ChatBubbles']
 local C_GossipInfo              = _G['C_GossipInfo']
@@ -262,46 +264,20 @@ local known_gossip_dynamic_seq_with_multiple_words_for_get_text_code = {
 local MAX_TEXT_CODE_LENGTH = 42
 
 local function get_text_code(text)
-    local result = { "_", "_", "_", "_", "_", "_", "_", "_", "_", "_" }
-    local result_len = #result
-    text = text:lower()
-
+    local text_low_case = text:lower()
     local seq_pairs = known_gossip_dynamic_seq_with_multiple_words_for_get_text_code
     for i = 1, #seq_pairs do
-        text = text:gsub(seq_pairs[i][1], seq_pairs[i][2])
+        text_low_case = text_low_case:gsub(seq_pairs[i][1], seq_pairs[i][2])
     end
-
-    local result_fill_idx = 1
-    for word in string.gmatch(text, "%w+") do
+    local result = {}
+    for word in strgmatch(text_low_case, [===[%w[%w%-']*%w]===]) do
         if #word > 0 then
-            if result_fill_idx > result_len then
-                break
-            end
-
-            for i = 1, #word do
-                result[result_fill_idx] = string.sub(word, i, i)
-                result_fill_idx = result_fill_idx + 1
-                if result_fill_idx > result_len then
-                    break
-                end
-            end
+            result[#result+1] = word:sub(1, 1)
+            result[#result+1] = word:sub(-1)
         end
     end
 
-    local result_idx = 1
-    local result_rewind = 1
-    for word in string.gmatch(text, "%w+") do
-        if #word > 0 then
-            result[result_idx] = string.sub(word, 1, 1)
-            result_idx = result_idx + 1
-            if result_idx > result_len then
-                result_rewind = result_rewind < result_len and result_rewind + 1 or result_len - 3
-                result_idx = result_rewind
-            end
-        end
-    end
-
-    return table.concat(result)
+    return tblconcat(result)
 end
 
 local function fuzzy_match_text_code(code, candidates, minimum_match_ratio)
