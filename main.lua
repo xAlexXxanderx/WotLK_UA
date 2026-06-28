@@ -9,6 +9,7 @@ local sort              = _G['sort']
 local strbyte           = _G['strbyte']
 local strsplit          = _G['strsplit']
 local strtrim           = _G['strtrim']
+local mathfmod         = _G.math.fmod
 
 local C_ChatBubbles             = _G['C_ChatBubbles']
 local C_GossipInfo              = _G['C_GossipInfo']
@@ -258,6 +259,7 @@ local known_gossip_dynamic_seq_with_multiple_words_for_get_text_code = {
     {"mag'har orc", "magharorc"},
     {"zandalari troll", "zandalaritroll"},
 }
+local MAX_TEXT_CODE_LENGTH = 42
 
 local function get_text_code(text)
     local result = { "_", "_", "_", "_", "_", "_", "_", "_", "_", "_" }
@@ -1055,21 +1057,86 @@ local function get_glossary_text(entry_key)
     end
 end
 
+local function lower(str)
+    return str:lower():gsub("Ї", "ї"):gsub("Є", "є"):gsub("І", "і"):gsub("Ґ", "ґ")
+end
+
+local function match_text_code(code, candidates)
+    for _, candidate in ipairs(candidates) do
+        -- If #code == MAX_TEXT_CODE_LENGTH - we do prefix match, as code may have been stripped
+        -- If #code < MAX_TEXT_CODE_LENGTH  - we do exact match, as code is full
+        if #candidate == MAX_TEXT_CODE_LENGTH and code:match('^' .. candidate .. '.*$') then
+            return candidate
+        else
+            if #candidate < MAX_TEXT_CODE_LENGTH and code:match('^' .. candidate .. '$') then
+                return candidate
+            end
+        end
+    end
+    return false
+end
+
+local function string_hash(text) -- https://wowwiki-archive.fandom.com/wiki/USERAPI_StringHash
+    if type(text) ~= "string" or text == "" then
+        return 0
+    end
+
+    local counter = 1
+    local len = #text
+    for i = 1, len, 3 do
+        counter = mathfmod(counter * 8161, 4294967279) +
+            (strbyte(text, i) * 16776193) +
+            ((strbyte(text, i+1) or (len - i + 256)) * 8372226) +
+            ((strbyte(text, i+2) or (len - i + 256)) * 3932164)
+    end
+
+    return mathfmod(counter, 4294967291)
+end
+
+local function get_text_hash(text)
+    if type(text) ~= "string" then
+        return 0
+    end
+    -- Replacing multiple NBSPs and spaces with single space
+    text = strtrim(lower(text:gsub("\194\160", " "):gsub(" +", " ")))
+    return string_hash(text)
+end
+
 local function get_gossip_text(npc_id, gossip_text)
     local at = addonTable
 
     if not npc_id or type(gossip_text) ~= "string" or #gossip_text < 1 or type(at.gossip) ~= "table" then
-        return
+        return nil, nil
     end
 
     npc_id = tonumber(npc_id)
+
+    -- check text hash hit
+
+    local gossip_text_hash = get_text_hash(gossip_text)
+
+    for _, gossip_key in ipairs({ npc_id, '!common' }) do
+        local npc_strings = at.gossip[gossip_key]
+        if npc_strings and npc_strings[gossip_text_hash] then
+            return make_text(npc_strings[gossip_text_hash]), nil
+        end
+    end
+
+    -- check text code hit
+
     local gossip_code = get_text_code(gossip_text)
 
-    if at.gossip[npc_id] then
-        local known_gossip_keys = table_string_keys(at.gossip[npc_id])
-        local gossip_fuzzy_key = fuzzy_match_text_code(gossip_code, known_gossip_keys)
-        if gossip_fuzzy_key then
-            return make_text(at.gossip[npc_id][gossip_fuzzy_key]), gossip_code
+    if gossip_code and #gossip_code > 0 then
+        for _, gossip_key in ipairs({ npc_id, '!common' }) do
+            local npc_strings = at.gossip[gossip_key]
+            if npc_strings and npc_strings['!code'] then
+                local known_gossip_keys = table_string_keys(npc_strings['!code'])
+                local gossip_key = match_text_code(gossip_code, known_gossip_keys)
+                if gossip_key then
+                    local hash = npc_strings['!code'][gossip_key]
+                    return make_text(npc_strings[hash]), gossip_code
+                end
+            end
         end
     end
 
