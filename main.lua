@@ -1834,15 +1834,9 @@ local function get_gossip_frame()
     local frame = CreateFrame("Frame", nil, GossipGreetingScrollFrame)
     frame:SetFrameStrata("HIGH")
 
-    if is_wrath then
-        frame:SetSize(width + 20, height - 51)
-        frame:SetPoint("TOP", 0, 5)
-        frame:SetPoint("RIGHT", width + 16, 0)
-    else
-        frame:SetSize(width + 20, height + 18)
-        frame:SetPoint("TOP", 0, 1)
-        frame:SetPoint("RIGHT", width + 16, 0)
-    end
+    frame:SetSize(width + 20, height)
+    frame:SetPoint("TOP", 0, 0)
+    frame:SetPoint("RIGHT", width + 50, 0)
 
     setup_frame_background_and_border(frame)
 
