@@ -75,7 +75,6 @@ local ZoneTextString            = _G['ZoneTextString']
 
 local build_info = GetBuildInfo()
 local is_classic = strbyte(build_info, 1) == 49
-local is_classic_sod = is_classic and C_Seasons and C_Seasons.HasActiveSeason() and C_Seasons.GetActiveSeason() == Enum.SeasonID.SeasonOfDiscovery
 local is_tbc = strbyte(build_info, 1) == 50
 local is_wrath = strbyte(build_info, 1) == 51
 local is_cata = strbyte(build_info, 1) == 52
@@ -93,7 +92,7 @@ local options = nil
 
 local function game_expansion_key()
     if is_classic then
-        return is_classic_sod and "sod" or "classic"
+        return "classic"
     elseif is_tbc then
         return "tbc"
     elseif is_wrath then
@@ -328,7 +327,6 @@ local default_dev_log = {
     missing_chats = {},
     missing_zones = {},
     missing_objects = {},
-    missing_sod_engravings = {},
     issues = {}
 }
 
@@ -350,7 +348,6 @@ local function dev_log_init()
     if not dev_log.missing_chats            then dev_log.missing_chats = {} end
     if not dev_log.missing_zones            then dev_log.missing_zones = {} end
     if not dev_log.missing_objects          then dev_log.missing_objects = {} end
-    if not dev_log.missing_sod_engravings   then dev_log.missing_sod_engravings = {} end
     if not dev_log.issues                   then dev_log.issues = {} end
 end
 
@@ -365,9 +362,6 @@ local function dev_log_print_stats()
     dev_log_print("Відсутні чати: "         .. table_keys_count(dev_log.missing_chats))
     dev_log_print("Відсутні зони: "         .. table_keys_count(dev_log.missing_zones))
     dev_log_print("Відсутні об'єкти: "      .. table_keys_count(dev_log.missing_objects))
-    if is_classic_sod then
-        dev_log_print("Відсутні SOD гравіювання: " .. table_keys_count(dev_log.missing_sod_engravings))
-    end
     dev_log_print("Помилки: "               .. table_keys_count(dev_log.issues))
     dev_log_print("----------------------------------------------")
 end
@@ -461,23 +455,6 @@ local function dev_log_missing_spell(spell_id, spell_name)
     end
 
     dev_log.missing_spells[spell_id] = spell_name
-end
-
-local function dev_log_missing_sod_engraving(sod_engraving_id, sod_engraving_name)
-    sod_engraving_id = tonumber(sod_engraving_id)
-    if not sod_engraving_id then
-        return
-    end
-
-    if dev_log.missing_sod_engravings[sod_engraving_id] then
-        return
-    end
-
-    if options.dev_mode_notify_activity then
-        dev_log_print("Відсутнє SOD гравіювання #" .. tostring(sod_engraving_id) .. " " .. sod_engraving_name)
-    end
-
-    dev_log.missing_sod_engravings[sod_engraving_id] = sod_engraving_name
 end
 
 local function dev_log_missing_book_page(book_id, page_number, page_text)
@@ -1303,21 +1280,6 @@ local function add_spell_entry_to_tooltip(tooltip, entry, spell_id, is_aura, ski
     end
 end
 
-local function add_sod_engraving_entry_to_tooltip(tooltip, entry, sod_engraving_id)
-    local heading = make_entry_text(entry[1], tooltip)
-    tooltip:AddLine(asset_ua_code .. " " .. capitalize(heading), 1, 1, 1)
-
-    if entry.spell then
-        local spell = get_entry("spell", entry.spell)
-        if spell then
-            add_spell_entry_to_tooltip(tooltip, spell, entry.spell, false, true)
-        elseif options.dev_mode then
-            dev_log_issue_entry("sod_engraving", sod_engraving_id, "невірне значення spell " .. tostring(entry.spell))
-            tooltip:AddLine("engraving.spell#" .. tostring(entry.spell), 1, 1, 1)
-        end
-    end
-end
-
 local function add_general_entry_to_tooltip(tooltip, entry)
     local heading = make_entry_text(entry[1], tooltip)
     tooltip:AddLine(asset_ua_code .. " " .. capitalize(heading), 1, 1, 1)
@@ -1346,8 +1308,6 @@ local function add_entry_to_tooltip(tooltip, entry_type, entry_id, is_aura)
             add_item_entry_to_tooltip(tooltip, entry, entry_id)
         elseif entry_type == "spell" then
             add_spell_entry_to_tooltip(tooltip, entry, entry_id, is_aura, false)
-        elseif entry_type == "sod_engraving" then
-            add_sod_engraving_entry_to_tooltip(tooltip, entry, entry_id)
         else
             add_general_entry_to_tooltip(tooltip, entry)
         end
@@ -1362,8 +1322,6 @@ local function add_entry_to_tooltip(tooltip, entry_type, entry_id, is_aura)
             dev_log_missing_item(entry_id, tt_title_line)
         elseif entry_type == "spell" then
             dev_log_missing_spell(entry_id, tt_title_line)
-        elseif entry_type == "sod_engraving" then
-            dev_log_missing_sod_engraving(entry_id, tt_title_line)
         end
     end
 
@@ -1501,17 +1459,6 @@ local function tooltip_updated(self)
     local name, unit = self:GetUnit()
     if name or unit then
         return
-    end
-
-    if addonTable.sod_engraving then
-        local owner = self:GetOwner()
-        if owner then
-            local owner_name = owner:GetName()
-            if owner_name and owner_name:find("^EngravingFrameScrollFrameButton") and owner.skillLineAbilityID then
-                add_entry_to_tooltip(self, "sod_engraving", owner.skillLineAbilityID)
-                return
-            end
-        end
     end
 
     local text = _G[self:GetName() .. "TextLeft1"]:GetText()
