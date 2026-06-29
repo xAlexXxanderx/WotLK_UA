@@ -1895,9 +1895,9 @@ local function get_book_frame()
     local width, height = ItemTextScrollFrame:GetSize()
     local frame = CreateFrame("Frame", nil, ItemTextScrollFrame)
     frame:SetFrameStrata("HIGH")
-    frame:SetSize(width + 18, height + 18)
-    frame:SetPoint("TOP", 0, 18/2)
-    frame:SetPoint("RIGHT", width + 27 + 18, 0)
+    frame:SetSize(width + 18, height + 14)
+    frame:SetPoint("TOP", 0, 6)
+    frame:SetPoint("RIGHT", width + 33 + 18, 0)
 
     setup_frame_background_and_border(frame)
 
