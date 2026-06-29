@@ -1782,7 +1782,7 @@ local function get_questlog_frame()
     frame:SetFrameStrata("HIGH")
     frame:SetSize(width + 18, height + 18)
     frame:SetPoint("TOP", 0, 18/2)
-    frame:SetPoint("RIGHT", width + 23 + 18, 0)
+    frame:SetPoint("RIGHT", width + 29 + 18, 0)
 
     setup_frame_background_and_border(frame)
 
