@@ -3,8 +3,8 @@
 ## Title: |cff1177eeWotLK_|r|cffffdd00UA|r
 ## Notes: Game localization to Ukrainian language.
 ## Author: Ported to 3.3.5a: xAlexXxanderx, Original authors: Greenya, Jakanis, and others
-## Version: 5.6.5
-## SavedVariables: WotLK_UA_Options
+## Version: 5.6.6dev
+## SavedVariables: WotLK_UA_Options, WotLK_UA_DevLog
 ## SavedVariablesPerCharacter: WotLK_UA_Character_Options
 
 entries\class.lua
